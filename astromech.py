@@ -53,7 +53,7 @@ class Astromech(object):
       self, 
       droid_type: str,
       mac_address: str, 
-      personality: Optional[Personality] = None
+      personality: Personality
     ):
     with open(Path(__file__).parent / 'config' / 'droids' / f"{droid_type}.yml") as f:
       config = yaml.safe_load(f)
@@ -242,53 +242,24 @@ class BB_Unit(Astromech):
     ramp_value = ramp_time if ramp_time is not None else self._head_ramp_time
     await self._move_wheels(Direction.BACKWARD, Direction.FORWARD, duration_ms, speed_value, speed_value, ramp_value)
 
-def _notification_callback(data: bytearray):
-  print(f"Incoming Notification: {_dump_bytes(data)}")
-
 def _dump_bytes(data: bytearray):
   return data.hex(bytes_per_sep=1, sep=' ')
 
 def _int_to_bytes(i: int):
   return i.to_bytes(2, 'big')
 
-async def test_r2():
-  async with R2_Unit(
-    "F7:E6:74:95:E5:53", 
-    personality=Personality('navy_blue')
-  ) as droid:
-    droid.listen_for_notifications(_notification_callback)
 
-    await droid.move_forward(500)
-    await droid.set_audio_group(1)
-    await asyncio.gather(
-      droid.spin_clockwise(speed=0xff, duration_ms=3000),
-      droid.play_sound_from_current_group(3),
-      droid.look_around()
-    )
-    await asyncio.gather(
-      droid.spin_counter_clockwise(speed=0xff, duration_ms=3000),
-      droid.play_sound_from_current_group(4),
-      droid.look_around()
-    )
+# async def test_bb():
+#   async with BB_Unit(
+#     BB_12, 
+#   ) as droid:
+#     droid.listen_for_notifications(_notification_callback)
 
-async def test_bb():
-  async with BB_Unit(
-    BB_12, 
-  ) as droid:
-    droid.listen_for_notifications(_notification_callback)
-
-    await droid.set_audio_group(0)    
-    await asyncio.gather(
-      droid.turn_head_clockwise(duration_ms=2000),
-      droid.play_sound_from_current_group(0),
-    )
+#     await droid.set_audio_group(0)    
+#     await asyncio.gather(
+#       droid.turn_head_clockwise(duration_ms=2000),
+#       droid.play_sound_from_current_group(0),
+#     )
 
 
-R2_T2 = 'F7:E6:74:95:E5:53'
 BB_12 = 'E6:1C:86:B3:BD:AE'
-
-if __name__ == '__main__':
-  asyncio.run(test_r2())
-  # asyncio.run(test_bb())
-  # for d in asyncio.run(scan()):
-  #   print(f"{d}")
