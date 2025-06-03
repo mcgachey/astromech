@@ -1,0 +1,6 @@
+wheels:
+  motor_ramp_time: 0x012c
+  speed: 0xa0
+head:
+  motor_ramp_time: 0x012c
+  speed: 0xa0

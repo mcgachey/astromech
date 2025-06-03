@@ -1,0 +1,7 @@
+asgiref==3.8.1
+bleak==0.22.3
+Hypercorn==0.17.3
+Flask==3.1.0
+PyBluez @ git+https://github.com/pybluez/pybluez.git@82cbba8a1ebd4c1e3442dfafd8581d58c50fa39e
+PyYAML==6.0.2
+requests==2.32.3
