@@ -105,9 +105,9 @@ class Astromech(object):
       left_direction: Direction, 
       right_direction: Direction,
       duration_ms: int,
-      left_speed: int, 
-      right_speed: int,
-      ramp_time: int,
+      left_speed: Optional[int], 
+      right_speed: Optional[int],
+      ramp_time: Optional[int],
     ):
     print(f"Left speed: {left_speed}, right speed: {right_speed}")
     await self._execute(self._motor_command(left_direction, Motor.LEFT, left_speed, ramp_time))
@@ -144,7 +144,6 @@ class Astromech(object):
     data = bytearray()
     data.append(0x1f + 4 + len(command_data))
     data.append(0x42)
-    # data.append(0x42 if command_id == 0x0f else 0x00)
     data.append(command_id)
     data.append(0x40 + len(command_data))
     data += command_data  
@@ -161,7 +160,7 @@ class Astromech(object):
     return response
 
 class R2_Unit(Astromech):
-  def __init__(self, mac_address, personality = None):
+  def __init__(self, mac_address, personality):
     super().__init__('r2', mac_address, personality)
 
   async def __aenter__(self) -> R2_Unit:
@@ -210,7 +209,7 @@ class R2_Unit(Astromech):
   async def turn_clockwise(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     await self._move_wheels(Direction.FORWARD, Direction.FORWARD, duration_ms, speed, 0, ramp_time)
 
-  async def turn_counter_clockwise(self, duration_ms: int, speed: Optional[int] = None, ramp_time: intOptional[int] = None):
+  async def turn_counter_clockwise(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     await self._move_wheels(Direction.FORWARD, Direction.FORWARD, duration_ms, 0, speed, ramp_time)
 
   async def drift_clockwise(self, duration_ms: int, speed: int = 0xa0, ramp_time: Optional[int] = None):
@@ -220,24 +219,24 @@ class R2_Unit(Astromech):
     await self._move_wheels(Direction.FORWARD, Direction.FORWARD, duration_ms, int(float(speed)/2.0), speed, ramp_time)
 
 class BB_Unit(Astromech):
-  def __init__(self, mac_address, personality = None):
+  def __init__(self, mac_address, personality):
     super().__init__('bb', mac_address, personality)
 
   async def __aenter__(self) -> BB_Unit:
     return cast(BB_Unit, await super().__aenter__())
 
-  async def move_forward(self, duration_ms: int, speed: int = None, ramp_time: int = None):
+  async def move_forward(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     await self._move_wheels(Direction.FORWARD, Direction.FORWARD, duration_ms, speed, speed, ramp_time)
 
-  async def move_backward(self, duration_ms: int, speed: int = None, ramp_time: int = None):
+  async def move_backward(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     await self._move_wheels(Direction.BACKWARD, Direction.BACKWARD, duration_ms, speed, speed, ramp_time)
 
-  async def turn_head_clockwise(self, duration_ms: int, speed: int = None, ramp_time: int = None):
+  async def turn_head_clockwise(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     speed_value = speed if speed is not None else self._head_speed
     ramp_value = ramp_time if ramp_time is not None else self._head_ramp_time
     await self._move_wheels(Direction.FORWARD, Direction.BACKWARD, duration_ms, speed_value, speed_value, ramp_value)
 
-  async def turn_head_counter_clockwise(self, duration_ms: int, speed: int = None, ramp_time: int = None):
+  async def turn_head_counter_clockwise(self, duration_ms: int, speed: Optional[int] = None, ramp_time: Optional[int] = None):
     speed_value = speed if speed is not None else self._head_speed
     ramp_value = ramp_time if ramp_time is not None else self._head_ramp_time
     await self._move_wheels(Direction.BACKWARD, Direction.FORWARD, duration_ms, speed_value, speed_value, ramp_value)
@@ -247,19 +246,3 @@ def _dump_bytes(data: bytearray):
 
 def _int_to_bytes(i: int):
   return i.to_bytes(2, 'big')
-
-
-# async def test_bb():
-#   async with BB_Unit(
-#     BB_12, 
-#   ) as droid:
-#     droid.listen_for_notifications(_notification_callback)
-
-#     await droid.set_audio_group(0)    
-#     await asyncio.gather(
-#       droid.turn_head_clockwise(duration_ms=2000),
-#       droid.play_sound_from_current_group(0),
-#     )
-
-
-BB_12 = 'E6:1C:86:B3:BD:AE'

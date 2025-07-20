@@ -1,25 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import enum
-from pathlib import Path
-from typing import cast, List, Optional
-import yaml
-from bleak import BleakScanner, BleakClient
-from bleak.backends.characteristic import BleakGATTCharacteristic
 
-from astromech import R2_Unit, Personality, _dump_bytes
-
-def _notification_callback(data: bytearray):
-  print(f"Incoming Notification: {_dump_bytes(data)}")
+from astromech import R2_Unit, Personality
 
 async def test_r2():
   async with R2_Unit(
     "F7:E6:74:95:E5:53", 
     personality=Personality('navy_blue')
   ) as droid:
-    droid.listen_for_notifications(_notification_callback)
-
     beep = droid.personality.sounds[2]
     await asyncio.gather(
       droid.play(beep, wait=True),
